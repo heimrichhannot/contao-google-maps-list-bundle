@@ -8,29 +8,25 @@ $dca = &$GLOBALS['TL_DCA']['tl_list_config'];
  * Palettes
  */
 $dca['palettes']['__selector__'][] = 'renderItemsAsMap';
-$dca['palettes']['__selector__'][] = 'useListAsMapControl';
-$dca['palettes']['default']        = str_replace('isTableList', 'isTableList,useListAsMapControl', $dca['palettes']['default']);
+$dca['palettes']['default']        = str_replace('isTableList', 'isTableList,renderItemsAsMap', $dca['palettes']['default']);
 
 /**
  * Subpalettes
  */
-$dca['subpalettes']['renderItemsAsMap']    = 'itemMap';
-$dca['subpalettes']['useListAsMapControl'] = 'controlledMap';
+$dca['subpalettes']['renderItemsAsMap'] = 'itemMap,addMapControlList';
 
 /**
  * Fields
  */
 $fields = [
-    // not implemented, yet
-    'renderItemsAsMap'    => [
+    'renderItemsAsMap'  => [
         'label'     => &$GLOBALS['TL_LANG']['tl_list_config']['renderItemsAsMap'],
         'exclude'   => true,
         'inputType' => 'checkbox',
         'eval'      => ['tl_class' => 'w50', 'submitOnChange' => true],
         'sql'       => "char(1) NOT NULL default ''"
     ],
-    // not implemented, yet
-    'itemMap'             => [
+    'itemMap'           => [
         'label'            => &$GLOBALS['TL_LANG']['tl_content']['googlemaps_map'],
         'exclude'          => true,
         'filter'           => true,
@@ -39,21 +35,12 @@ $fields = [
         'eval'             => ['tl_class' => 'w50', 'mandatory' => true, 'includeBlankOption' => true, 'chosen' => true],
         'sql'              => "int(10) unsigned NOT NULL default '0'"
     ],
-    'useListAsMapControl' => [
-        'label'     => &$GLOBALS['TL_LANG']['tl_list_config']['useListAsMapControl'],
+    'addMapControlList' => [
+        'label'     => &$GLOBALS['TL_LANG']['tl_list_config']['addMapControlList'],
         'exclude'   => true,
         'inputType' => 'checkbox',
-        'eval'      => ['tl_class' => 'w50', 'submitOnChange' => true],
+        'eval'      => ['tl_class' => 'w50'],
         'sql'       => "char(1) NOT NULL default ''"
-    ],
-    'controlledMap'       => [
-        'label'            => &$GLOBALS['TL_LANG']['tl_content']['googlemaps_map'],
-        'exclude'          => true,
-        'filter'           => true,
-        'inputType'        => 'select',
-        'options_callback' => ['huh.google_maps.data_container.google_map', 'getMapChoices'],
-        'eval'             => ['tl_class' => 'w50', 'mandatory' => true, 'includeBlankOption' => true, 'chosen' => true],
-        'sql'              => "int(10) unsigned NOT NULL default '0'"
     ],
 ];
 

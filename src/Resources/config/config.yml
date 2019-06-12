@@ -1,6 +1,6 @@
 huh:
   list:
     lists:
-      - { name: google_maps_controlled_map_default, class: HeimrichHannot\GoogleMapsListBundle\Lists\DefaultControllerList }
+      - { name: google_maps_controlled_map_default, class: HeimrichHannot\GoogleMapsListBundle\Lists\DefaultList }
     items:
-      - { name: google_maps_controller_item_default, class: HeimrichHannot\GoogleMapsListBundle\Item\DefaultControllerItem }
+      - { name: google_maps_controller_item_default, class: HeimrichHannot\GoogleMapsListBundle\Item\DefaultItem }

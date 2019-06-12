@@ -4,17 +4,23 @@
             <p class="count">{{ itemsFoundText|raw }}</p>
         {% endif %}
 
-        {{ renderedControlledMap|default|raw }}
-
-        {% if items is not empty %}
-            <div class="items{{ itemsClass|default() ? ' ' ~ itemsClass : '' }}"{{ dataAttributes|default()|raw }}>
-                {% for item in items %}
-                    {{ item|raw }}
-                {% endfor %}
+        <div class="row">
+            <div class="col-md-8">
+                {{ renderedMap|default|raw }}
             </div>
-            {{ pagination|default()|raw }}
-        {% elseif showNoItemsText %}
-            <p class="no-items">{{ noItemsText|raw }}</p>
-        {% endif %}
+
+            <div class="col-md-4">
+                {% if items is not empty %}
+                    <div class="items{{ itemsClass|default() ? ' ' ~ itemsClass : '' }}"{{ dataAttributes|default()|raw }}>
+                        {% for item in items %}
+                            {{ item|raw }}
+                        {% endfor %}
+                    </div>
+                    {{ pagination|default()|raw }}
+                {% elseif showNoItemsText %}
+                    <p class="no-items">{{ noItemsText|raw }}</p>
+                {% endif %}
+            </div>
+        </div>
     {% endif %}
 </div>
