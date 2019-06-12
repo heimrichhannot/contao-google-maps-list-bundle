@@ -2,35 +2,17 @@
 
 namespace HeimrichHannot\GoogleMapsListBundle\Lists;
 
-use Contao\Config;
-use Contao\Database;
-use Contao\Date;
-use Contao\FrontendTemplate;
+use Contao\Environment;
 use Contao\Model;
-use Contao\StringUtil;
 use Contao\System;
-use HeimrichHannot\Blocks\BlockModuleModel;
-use HeimrichHannot\FilterBundle\Config\FilterConfig;
-use HeimrichHannot\FilterBundle\QueryBuilder\FilterQueryBuilder;
 use HeimrichHannot\GoogleMapsBundle\EventListener\MapRendererListener;
 use HeimrichHannot\GoogleMapsBundle\Model\OverlayModel;
-use HeimrichHannot\ListBundle\Backend\ListConfig;
-use HeimrichHannot\ListBundle\Event\ListAfterParseItemsEvent;
-use HeimrichHannot\ListBundle\Event\ListAfterRenderEvent;
 use HeimrichHannot\ListBundle\Event\ListBeforeParseItemsEvent;
-use HeimrichHannot\ListBundle\Event\ListBeforeRenderEvent;
-use HeimrichHannot\ListBundle\Event\ListModifyQueryBuilderEvent;
-use HeimrichHannot\ListBundle\Event\ListModifyQueryBuilderForCountEvent;
-use HeimrichHannot\ListBundle\HeimrichHannotContaoListBundle;
-use HeimrichHannot\ListBundle\Item\ItemInterface;
 use HeimrichHannot\ListBundle\Manager\ListManagerInterface;
-use HeimrichHannot\ListBundle\Model\ListConfigModel;
-use HeimrichHannot\ListBundle\Pagination\RandomPagination;
 use Ivory\GoogleMap\Helper\Builder\ApiHelperBuilder;
 use Ivory\GoogleMap\Helper\Builder\MapHelperBuilder;
 use Ivory\GoogleMap\Map;
 use Model\Collection;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
 class DefaultList extends \HeimrichHannot\ListBundle\Lists\DefaultList
 {
@@ -44,11 +26,15 @@ class DefaultList extends \HeimrichHannot\ListBundle\Lists\DefaultList
      */
     protected $_renderedMap;
 
-    public function parse(string $listTemplate = null, string $itemTemplate = null, array $data = []): ?string
+    public function __construct(ListManagerInterface $_manager)
     {
-        System::getContainer()->get('event_dispatcher')->addListener(ListBeforeRenderEvent::NAME, function(ListBeforeRenderEvent $event) {
+        parent::__construct($_manager);
+
+        System::getContainer()->get('event_dispatcher')->addListener(ListBeforeParseItemsEvent::NAME, function(ListBeforeParseItemsEvent $event) {
             $listConfig = $event->getListConfig();
-            $templateData = $event->getTemplateData();
+
+            /** @var DefaultList $list */
+            $list = $event->getList();
 
             if (!$listConfig->renderItemsAsMap || null === ($map = System::getContainer()->get('huh.utils.model')->findModelInstanceByPk('tl_google_map', $listConfig->itemMap)))
             {
@@ -57,12 +43,24 @@ class DefaultList extends \HeimrichHannot\ListBundle\Lists\DefaultList
 
             $overlays = $this->transformItemsToOverlays($event->getItems());
 
-            $templateData['renderedMap'] = $this->renderMap($listConfig->itemMap, $map->row(), $overlays);
-            $event->setTemplateData($templateData);
-        });
+            $list->setRenderedMap($this->renderMap($listConfig->itemMap, $map->row(), $overlays));
 
-        return parent::parse($listTemplate, $itemTemplate, $data);
+            $markerVariableMapping = System::getContainer()->get('huh.google_maps.overlay_manager')->getMarkerVariableMapping();
+
+            $items = [];
+
+            foreach ($event->getItems() as $item)
+            {
+                $item['markerVariable'] = $markerVariableMapping[$item['id']];
+                $item['markerHref'] = Environment::get('uri') . '#' . $markerVariableMapping[$item['id']];
+
+                $items[] = $item;
+            }
+
+            $event->setItems($items);
+        });
     }
+
 
     public function transformItemsToOverlays(array $items)
     {
