@@ -26,45 +26,52 @@ class DefaultList extends \HeimrichHannot\ListBundle\Lists\DefaultList
      */
     protected $_renderedMap;
 
+    /**
+     * @var string
+     */
+    protected $_addMapControlList;
+
+
     public function __construct(ListManagerInterface $_manager)
     {
         parent::__construct($_manager);
 
-        System::getContainer()->get('event_dispatcher')->addListener(ListBeforeParseItemsEvent::NAME, function(ListBeforeParseItemsEvent $event) {
-            $listConfig = $event->getListConfig();
+        System::getContainer()->get('event_dispatcher')->addListener(ListBeforeParseItemsEvent::NAME,
+            function (ListBeforeParseItemsEvent $event) {
+                $listConfig = $event->getListConfig();
 
-            /** @var DefaultList $list */
-            $list = $event->getList();
+                /** @var DefaultList $list */
+                $list = $event->getList();
 
-            if (!$listConfig->renderItemsAsMap || null === ($map = System::getContainer()->get('huh.utils.model')->findModelInstanceByPk('tl_google_map', $listConfig->itemMap)))
-            {
-                return;
-            }
+                if (!$listConfig->renderItemsAsMap || null === ($map = System::getContainer()->get('huh.utils.model')->findModelInstanceByPk('tl_google_map',
+                        $listConfig->itemMap))) {
+                    return;
+                }
 
-            $overlays = $this->transformItemsToOverlays($event->getItems());
+                $overlays = $this->transformItemsToOverlays($event->getItems());
 
-            $list->setRenderedMap($this->renderMap($listConfig->itemMap, $map->row(), $overlays));
+                $list->setRenderedMap($this->renderMap($listConfig->itemMap, $map->row(), $overlays));
+                $list->setAddMapControlList($listConfig->addMapControlList);
 
-            $markerVariableMapping = System::getContainer()->get('huh.google_maps.overlay_manager')->getMarkerVariableMapping();
+                $markerVariableMapping = System::getContainer()->get('huh.google_maps.overlay_manager')->getMarkerVariableMapping();
 
-            $items = [];
+                $items = [];
 
-            foreach ($event->getItems() as $item)
-            {
-                $item['markerVariable'] = $markerVariableMapping[$item['id']];
-                $item['markerHref'] = Environment::get('uri') . '#' . $markerVariableMapping[$item['id']];
+                foreach ($event->getItems() as $item) {
+                    $item['markerVariable'] = $markerVariableMapping[$item['id']];
+                    $item['markerHref']     = Environment::get('uri') . '#' . $markerVariableMapping[$item['id']];
 
-                $items[] = $item;
-            }
+                    $items[] = $item;
+                }
 
-            $event->setItems($items);
-        });
+                $event->setItems($items);
+            });
     }
 
 
     public function transformItemsToOverlays(array $items)
     {
-        $models = array_map(function($item) {
+        $models = array_map(function ($item) {
             $overlay = new OverlayModel();
 
             $overlay->setRow($item);
@@ -79,7 +86,8 @@ class DefaultList extends \HeimrichHannot\ListBundle\Lists\DefaultList
     {
         $mapManager = System::getContainer()->get('huh.google_maps.map_manager');
 
-        if (null === ($mapConfig = System::getContainer()->get('huh.utils.model')->findModelInstanceByPk('tl_google_map', $mapId))) {
+        if (null === ($mapConfig = System::getContainer()->get('huh.utils.model')->findModelInstanceByPk('tl_google_map',
+                $mapId))) {
             return null;
         }
 
@@ -142,5 +150,21 @@ class DefaultList extends \HeimrichHannot\ListBundle\Lists\DefaultList
     public function setRenderedMap(string $renderedMap): void
     {
         $this->_renderedMap = $renderedMap;
+    }
+
+    /**
+     * @return bool|null
+     */
+    public function getAddMapControlList()
+    {
+        return $this->_addMapControlList;
+    }
+
+    /**
+     * @param bool $addMapControlList
+     */
+    public function setAddMapControlList(bool $addMapControlList): void
+    {
+        $this->_addMapControlList = $addMapControlList;
     }
 }
