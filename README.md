@@ -1,5 +1,7 @@
 # Contao Google Maps List Bundle
 
+> This bundle is discontinued. It's functionality was moved directly into google-maps-bundle.
+
 This bundle acts as a bridge between [heimrichhannot/contao-list-bundle](https://github.com/heimrichhannot/contao-list-bundle) and [heimrichhannot/contao-google-maps-bundle](https://github.com/heimrichhannot/contao-google-maps-bundle) in order render lists as a google map.
 
 ## Installation
